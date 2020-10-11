@@ -21,11 +21,11 @@ env:
 | Input      |                               Description |                        Example | Required |
 | :--------- | ----------------------------------------: | -----------------------------: | -------: |
 | TYPE       |                            processor type |                       `ubuntu` |      yes |
-| FILE       | path to file to be updated (JSON or YAML) |             `/deploy/ami.json` |      yes |
+| FILE       | path to file to be updated (JSON or YAML) |              `deploy/ami.json` |      yes |
 | KEY        |                 key in file to be updated |          `builders.source_ami` |      yes |
 | REPOSITORY |                                repository | `dragonraid/deployment-bumper` |      yes |
-| USERNAME   |                           github username |                   `dragonraid` |       no |
-| PASSWORD   |              github personal access token |                         `xxxx` |       no |
+| USERNAME   |                           github username |                   `dragonraid` |      yes |
+| PASSWORD   |              github personal access token |                         `xxxx` |      yes |
 
 ## Types
 
@@ -63,10 +63,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: update ubuntu AMI
-        uses: dragonraid/deployment-bumper@v0.0.1
+        uses: dragonraid/deployment-bumper@v0.1.0
         env:
           TYPE: ubuntu
-          FILE: /deploy/ami.json
+          FILE: deploy/ami.json
           REPOSITORY: dragonraid/deployment-bumper
           USERNAME: dragonraid
           PASSWORD: really-strong-password
