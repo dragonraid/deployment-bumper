@@ -1,6 +1,6 @@
 # Deployment bumper
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)]
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This github action allows you to update deployment related stuff like OS images.
 It does so by reading specified file in your repository updating respective
