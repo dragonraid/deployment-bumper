@@ -1,5 +1,7 @@
 # Deployment bumper
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)]
+
 This github action allows you to update deployment related stuff like OS images.
 It does so by reading specified file in your repository updating respective
 dependency/version and opening pull request with this update to against default branch.
@@ -25,7 +27,7 @@ env:
 | KEY        |                 key in file to be updated |          `builders.source_ami` |      yes |
 | REPOSITORY |                                repository | `dragonraid/deployment-bumper` |      yes |
 | USERNAME   |                           github username |                   `dragonraid` |      yes |
-| PASSWORD   |              github personal access token |                         `xxxx` |      yes |
+| PASSWORD   |  password or github personal access token |                         `xxxx` |      yes |
 
 ## Types
 
@@ -68,8 +70,8 @@ jobs:
           TYPE: ubuntu
           FILE: deploy/ami.json
           REPOSITORY: dragonraid/deployment-bumper
-          USERNAME: dragonraid
-          PASSWORD: really-strong-password
+          USERNAME: ${{ secrets.username }}
+          PASSWORD: ${{ secrets.password }}
           KEY: builders.source_ami
           CLOUD: Amazon AWS
           ZONE: us-east-1
