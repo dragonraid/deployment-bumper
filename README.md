@@ -7,6 +7,10 @@ It does so by reading specified file in your repository updating respective
 dependency/version and opening pull request with this update to against default branch.
 See _Types_ section to see, what can this action update.
 
+> NOTE: This action is not using standard github action execution with `uses` keyword, because that
+> would require to check in node_modules. Instead, it clones this action and then runs npm install
+> and npm start
+
 ## Inputs
 
 Environment variables are used for inputs instead of actual github action inputs,
@@ -64,18 +68,27 @@ jobs:
   update:
     runs-on: ubuntu-20.04
     steps:
-      - name: update ubuntu AMI
-        uses: dragonraid/deployment-bumper@v0.1.0
+      - name: checkout dragonraid/deployment-bumper
+        uses: actions/checkout@v2
+        with:
+          repository: dragonraid/deployment-bumper
+          ref: refs/heads/main
+          path: ./.github/actions/deployment-bumper
+      - name: run deployment-bumper
+        working-directory: ./.github/actions/deployment-bumper
         env:
           TYPE: ubuntu
-          FILE: deploy/ami.json
-          REPOSITORY: dragonraid/deployment-bumper
+          FILE: packer.json
+          REPOSITORY: dragonraid/test
           USERNAME: ${{ secrets.username }}
           PASSWORD: ${{ secrets.password }}
-          KEYS: builders.source_ami
+          KEYS: image.id
           CLOUD: Amazon AWS
           ZONE: us-east-1
           VERSION: '20.04'
           ARCHITECTURE: amd64
           INSTANCE_TYPE: hvm-ssd
+        run: |
+          npm install --only=prod
+          npm start
 ```
