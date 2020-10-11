@@ -72,7 +72,7 @@ jobs:
           REPOSITORY: dragonraid/deployment-bumper
           USERNAME: ${{ secrets.username }}
           PASSWORD: ${{ secrets.password }}
-          KEY: builders.source_ami
+          KEYS: builders.source_ami
           CLOUD: Amazon AWS
           ZONE: us-east-1
           VERSION: '20.04'

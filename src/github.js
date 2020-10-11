@@ -86,6 +86,8 @@ class Repository {
      */
     async push(commitMessage) {
         await this.repoGitClient
+            .addConfig('user.email', 'deployment-bumper')
+            .addConfig('user.name', 'deployment-bumper')
             .add('.')
             .commit(commitMessage)
             .push('origin', this.branchName);
