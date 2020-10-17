@@ -14,7 +14,7 @@ const RAW_CONFIG = {
     KEYS: process.env.KEYS || null,
     BRANCH_NAME: process.env.BRANCH_NAME || process.env.TYPE,
     BRANCH_PREFIX: process.env.BRANCH_PREFIX || 'update',
-    REPOSITORY: process.env.REPOSITORY || null,
+    REPOSITORY: process.env.REPOSITORY || process.env.GITHUB_REPOSITORY,
     USERNAME: process.env.USERNAME || null,
     PASSWORD: process.env.PASSWORD || null,
 };
