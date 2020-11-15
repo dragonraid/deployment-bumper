@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { File } = require('./file');
 
 const UBUNTU_IMAGE_FINDER_URL = 'https://cloud-images.ubuntu.com/locator/releasesTable?_=1598175887311';
 const FIELD_MAPPINGS = {
@@ -16,10 +17,10 @@ const LINK_REGEX = /(.*\")(.*)(\">)(.*)(<.*)/;
 /**
  * Linux ubuntu handler
  */
-class Ubuntu {
+class Ubuntu extends File {
     /**
      * Represents ubuntu image
-     * @param {string} criteria     - object with filter properties
+     * @param {object} criteria - object with filter properties
      *           example: {
      *               cloud: 'Amazon AWS',
      *               zone: 'us-east-1',
@@ -29,9 +30,13 @@ class Ubuntu {
      *               instanceType: 'hvm-ssd',
      *               release: '20201204'
      *           }
+     * @param {string} filePath - path to file
+     * @param {string} keys     - keys to be replaced
      */
-    constructor(criteria) {
+    constructor(criteria, filePath, keys) {
+        super(filePath);
         this.criteria = criteria;
+        this.keys = keys;
         this.allImages = null;
         this.processedImages = null;
     }
@@ -43,7 +48,7 @@ class Ubuntu {
         if (!this.processedImages) {
             // Workaround since you cannot have async getter
             return (async () => {
-                await this.run();
+                await this.initialize();
             })().then(() => {
                 return this._constructImageProperties(this.processedImages[0]);
             });
@@ -105,11 +110,26 @@ class Ubuntu {
     }
 
     /**
-     * Runs ubuntu image retrieval
+     * Initializes ubuntu object
      */
-    async run() {
+    async initialize() {
         await this.getImages();
         this.filterImages();
+    }
+
+    /**
+     * Runs initialize and edits file
+     */
+    async run() {
+        await this.initialize();
+        const latest = this.processedImages[0];
+        const keyValuePairs = {};
+        this.keys.forEach((key) => {
+            keyValuePairs[key] = latest.id;
+        });
+        const data = await this.read();
+        const editedData = this.edit(data, keyValuePairs);
+        await this.write(editedData);
     }
 }
 

@@ -1,6 +1,5 @@
-const { File } = require('./file');
 const { Repository } = require('./github');
-const { Ubuntu } = require('./ubuntu');
+const handlers = require('./handlers');
 
 // load environment variables from .env file if not running in production
 if (process.env.NODE_ENV !== 'production') {
@@ -11,7 +10,6 @@ if (process.env.NODE_ENV !== 'production') {
 const RAW_CONFIG = {
     TYPE: process.env.TYPE || null,
     FILE: process.env.FILE || null,
-    KEYS: process.env.KEYS || null,
     BRANCH_NAME: process.env.BRANCH_NAME || process.env.TYPE,
     BRANCH_PREFIX: process.env.BRANCH_PREFIX || 'update',
     REPOSITORY: process.env.REPOSITORY || process.env.GITHUB_REPOSITORY,
@@ -30,43 +28,15 @@ const CONFIG = {};
 const processConfig = () => {
     for (const [key, value] of Object.entries(RAW_CONFIG)) {
         if (!value) {
-            if (value === 'USERNAME' || value === 'PASSWORD') continue;
+            if (value === 'USERNAME' || value === 'PASSWORD') {
+                throw new Error(`Invalid USERNAME or PASSWORD!`);
+            };
             throw new Error(
                 `Invalid configuration value: ${value} for ${key}.`,
             );
         }
-        switch (key) {
-            case 'KEYS':
-                CONFIG[key] = value.split(',');
-                break;
-            default:
-                CONFIG[key] = value;
-        }
+        CONFIG[key] = value;
     }
-};
-
-const handleUbuntu = async () => {
-    const filterValues = {
-        cloud: process.env.CLOUD || null,
-        zone: process.env.ZONE || null,
-        version: process.env.VERSION || null,
-        architecture: process.env.ARCHITECTURE || null,
-        instanceType: process.env.INSTANCE_TYPE || null,
-        release: process.env.RELEASE || null,
-    };
-
-    const filter = {};
-    Object.keys(filterValues).forEach((value) => {
-        if (filterValues[value]) filter[value] = filterValues[value];
-    });
-    const ubuntu = new Ubuntu(filter);
-    const latestUbuntu = await ubuntu.latest;
-    const keyValuePairs = {};
-    CONFIG.KEYS.forEach((key) => {
-        keyValuePairs[key] = latestUbuntu.id;
-    });
-
-    return keyValuePairs;
 };
 
 const initializeRepo = async (branchName) => {
@@ -81,17 +51,8 @@ const initializeRepo = async (branchName) => {
     return repository;
 };
 
-const throwError = (resolved) => {
-    resolved.forEach((process) => {
-        if (process.status === 'rejected') {
-            console.error('An error has occurred.');
-            throw new Error(JSON.stringify(process.reason));
-        }
-    });
-};
-
-const TYPE_PROCESSORS = {
-    ubuntu: handleUbuntu,
+const PROCESSOR_TYPES = {
+    ubuntu: handlers.handleUbuntu,
 };
 
 const main = async () => {
@@ -101,37 +62,20 @@ const main = async () => {
         console.error('Config processor has failed!', err);
         process.exit(1);
     }
-    const processor = await Promise.allSettled([
-        TYPE_PROCESSORS[CONFIG.TYPE](),
-        // TODO: option for supplying custom branch name and custom prefix
-        initializeRepo(`${CONFIG.BRANCH_PREFIX}/${CONFIG.BRANCH_NAME}`),
-    ]);
-    throwError(processor);
-    console.log(`Successfully executed processor ${CONFIG.TYPE}.`);
-
-    const repository = processor[1].value;
-    const filePath = `${repository.path}/${CONFIG.FILE}`;
-    const keyValuePairs = processor[0].value;
 
     try {
-        const file = new File({ filePath, keyValuePairs });
-        await file.run();
-    } catch (err) {
-        console.error('Updating file has failed!', err);
-        process.exit(1);
-    }
-    console.log(`File "${filePath}" has been successfully updated.`);
-
-    try {
+        const repository = await initializeRepo(
+            `${CONFIG.BRANCH_PREFIX}/${CONFIG.BRANCH_NAME}`,
+        );
+        await PROCESSOR_TYPES[CONFIG.TYPE](repository);
+        console.log(`Successfully executed processor ${CONFIG.TYPE}.`);
         await repository.push(`update ${CONFIG.TYPE}`);
         await repository.createPullRequest();
+        console.log('Pull-request created.');
     } catch (err) {
-        console.error(`Opening pull request with changes has failed!`, err);
+        console.error(`${CONFIG.TYPE} processor failed.`, err);
         process.exit(1);
     }
-    console.log(
-        `Successfully pushed branch "${repository.branchName}" to remote.`,
-    );
 };
 
 main();

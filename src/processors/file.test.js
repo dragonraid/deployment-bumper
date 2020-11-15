@@ -20,6 +20,12 @@ const resultedFileData = {
 const jsonFile = new File({ filePath: filePathJson, keyValuePairs });
 const yamlFile = new File({ filePath: filePathYaml, keyValuePairs });
 
+describe('File', () => {
+    test('throws an error if not properly initialized', () => {
+        expect(() => new File()).toThrow();
+    });
+});
+
 describe('JSON file', () => {
     beforeEach(async () => {
         const content = JSON.stringify(origFileData);

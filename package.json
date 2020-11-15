@@ -7,7 +7,8 @@
     "cleanup": "rm -fr /tmp/dragonraid",
     "dev": "npm run cleanup && node src/index.js",
     "start": "NODE_ENV=production node src/index.js",
-    "test": "jest ."
+    "test": "jest .",
+    "lint": "eslint ."
   },
   "author": {
     "name": "Lukas Novotny",
