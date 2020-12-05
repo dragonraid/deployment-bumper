@@ -1,12 +1,12 @@
+const { Helmfile } = require('./processors/helmfile');
 const { Ubuntu } = require('./processors/ubuntu');
-const { File } = require('./processors/file');
 
 /**
  * Ubuntu processor handler. Edits specified value in specified file
  * based on input parameters
- * @param {object} repository - repository object
+ * @param {object} filePath - full path to file
  */
-const handleUbuntu = async (repository) => {
+const handleUbuntu = async (filePath) => {
     const filterValues = {
         cloud: process.env.CLOUD || null,
         zone: process.env.ZONE || null,
@@ -24,21 +24,33 @@ const handleUbuntu = async (repository) => {
         throw new Error('KEYS must be supplied!');
     }
 
-    const filePath = process.env.FILE;
-    if (!filePath) {
-        throw new Error('FILE must be supplied');
-    }
-    const fullFilePath = `${repository.path}/${filePath}`;
-
     const filter = {};
     Object.keys(filterValues).forEach((value) => {
         if (filterValues[value]) filter[value] = filterValues[value];
     });
-    const ubuntu = new Ubuntu(filter, fullFilePath, keys);
+    const ubuntu = new Ubuntu(filter, filePath, keys);
     await ubuntu.run();
-    console.log(`File "${fullFilePath}" has been successfully updated.`);
+    console.log(`File "${filePath}" has been successfully updated.`);
+};
+
+/**
+ * Helmfile processor handler. Updates helmfiles lock file.
+ * @param {object} filePath - full path to file
+ */
+const handleHelmfile = async (filePath) => {
+    const helmfileArgs = {
+        file: filePath,
+    };
+    if (process.env.ENVIRONMENT) {
+        helmfileArgs.environment = process.env.ENVIRONMENT;
+    }
+
+    const helmfile = new Helmfile(helmfileArgs);
+    await helmfile.run();
+    console.log(`File "${filePath}" has been successfully updated.`);
 };
 
 module.exports = {
     handleUbuntu,
+    handleHelmfile,
 };

@@ -20,18 +20,18 @@ const LINK_REGEX = /(.*\")(.*)(\">)(.*)(<.*)/;
 class Ubuntu extends File {
     /**
      * Represents ubuntu image
-     * @param {object} criteria - object with filter properties
-     *           example: {
-     *               cloud: 'Amazon AWS',
-     *               zone: 'us-east-1',
-     *               name: 'bionic',
-     *               version: '18.04',
-     *               architecture: 'amd64',
-     *               instanceType: 'hvm-ssd',
-     *               release: '20201204'
-     *           }
+     * @param {object} criteria - object with filter properties. For example:
+     *                              {
+     *                                  cloud: 'Amazon AWS',
+     *                                  zone: 'us-east-1',
+     *                                  name: 'bionic',
+     *                                  version: '18.04',
+     *                                  architecture: 'amd64',
+     *                                  instanceType: 'hvm-ssd',
+     *                                  release: '20201204'
+     *                              }
      * @param {string} filePath - path to file
-     * @param {string} keys     - keys to be replaced
+     * @param {array} keys      - string keys to be replaced
      */
     constructor(criteria, filePath, keys) {
         super(filePath);
@@ -39,22 +39,6 @@ class Ubuntu extends File {
         this.keys = keys;
         this.allImages = null;
         this.processedImages = null;
-    }
-
-    /**
-     * Gets latest image.
-     */
-    get latest() {
-        if (!this.processedImages) {
-            // Workaround since you cannot have async getter
-            return (async () => {
-                await this.initialize();
-            })().then(() => {
-                return this._constructImageProperties(this.processedImages[0]);
-            });
-        } else {
-            return this.processedImages[0];
-        }
     }
 
     /**
@@ -83,6 +67,7 @@ class Ubuntu extends File {
             );
         });
 
+        images = images.map(this._constructImageProperties);
         this.processedImages = images.sort(
             (a, b) => (
                 // eslint-disable-next-line max-len
@@ -110,18 +95,11 @@ class Ubuntu extends File {
     }
 
     /**
-     * Initializes ubuntu object
-     */
-    async initialize() {
-        await this.getImages();
-        this.filterImages();
-    }
-
-    /**
-     * Runs initialize and edits file
+     * Runs, initializes and edits file
      */
     async run() {
-        await this.initialize();
+        await this.getImages();
+        this.filterImages();
         const latest = this.processedImages[0];
         const keyValuePairs = {};
         this.keys.forEach((key) => {

@@ -2,7 +2,6 @@ const { File } = require('./file');
 const fs = require('fs').promises;
 const yaml = require('js-yaml');
 
-
 const filePathJson = './test_file.JSON';
 const filePathYaml = './test_file.yaml';
 const keyValuePairs = {
@@ -17,8 +16,8 @@ const resultedFileData = {
     keyN: 'valueN',
 };
 
-const jsonFile = new File({ filePath: filePathJson, keyValuePairs });
-const yamlFile = new File({ filePath: filePathYaml, keyValuePairs });
+const jsonFile = new File(filePathJson);
+const yamlFile = new File(filePathYaml);
 
 describe('File', () => {
     test('throws an error if not properly initialized', () => {
@@ -51,13 +50,6 @@ describe('JSON file', () => {
         const data = JSON.parse(content);
         expect(data).toMatchObject(resultedFileData);
     });
-
-    test('is able to execute run() function', async () => {
-        await jsonFile.run();
-        const content = await fs.readFile(filePathJson, 'utf8');
-        const data = JSON.parse(content);
-        expect(data).toMatchObject(resultedFileData);
-    });
 });
 
 describe('YAML file', () => {
@@ -85,18 +77,11 @@ describe('YAML file', () => {
         const data = yaml.safeLoad(content);
         expect(data).toMatchObject(resultedFileData);
     });
-
-    test('is able to execute run() function', async () => {
-        await yamlFile.run();
-        const content = await fs.readFile(filePathYaml, 'utf8');
-        const data = yaml.safeLoad(content);
-        expect(data).toMatchObject(resultedFileData);
-    });
 });
 
 describe('File', () => {
     test('can be edited', () => {
-        const editedData = jsonFile.edit(origFileData);
+        const editedData = jsonFile.edit(origFileData, keyValuePairs);
         expect(editedData).toMatchObject(resultedFileData);
     });
 });

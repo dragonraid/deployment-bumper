@@ -24,7 +24,7 @@ const FILE_TYPE_PROCESSORS = {
  */
 class File {
     /**
-     * @param {string} filePath      - file to be edited
+     * @param {string} filePath - file to be edited
      */
     constructor(filePath) {
         this.filePath = null;

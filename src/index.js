@@ -1,12 +1,9 @@
 const { Repository } = require('./github');
 const handlers = require('./handlers');
 
-// load environment variables from .env file if not running in production
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
-
-// Check if environment variable exists, otherwise set default
+/**
+ * Raw configuration.
+ */
 const RAW_CONFIG = {
     TYPE: process.env.TYPE || null,
     FILE: process.env.FILE || null,
@@ -28,7 +25,7 @@ const CONFIG = {};
 const processConfig = () => {
     for (const [key, value] of Object.entries(RAW_CONFIG)) {
         if (!value) {
-            if (value === 'USERNAME' || value === 'PASSWORD') {
+            if (key === 'USERNAME' || key === 'PASSWORD') {
                 throw new Error(`Invalid USERNAME or PASSWORD!`);
             };
             throw new Error(
@@ -39,6 +36,11 @@ const processConfig = () => {
     }
 };
 
+/**
+ * Clone repository and checkout the feature branch
+ * @param {string} branchName - feature branch name
+ * @return {object}
+ */
 const initializeRepo = async (branchName) => {
     const repository = new Repository({
         repository: CONFIG.REPOSITORY,
@@ -51,11 +53,18 @@ const initializeRepo = async (branchName) => {
     return repository;
 };
 
+/**
+ * Define handle types
+ */
 const PROCESSOR_TYPES = {
     ubuntu: handlers.handleUbuntu,
+    helmfile: handlers.handleHelmfile,
 };
 
-const main = async () => {
+/**
+ * Main function
+ */
+(async () => {
     try {
         processConfig();
     } catch (err) {
@@ -67,7 +76,8 @@ const main = async () => {
         const repository = await initializeRepo(
             `${CONFIG.BRANCH_PREFIX}/${CONFIG.BRANCH_NAME}`,
         );
-        await PROCESSOR_TYPES[CONFIG.TYPE](repository);
+        const fullFilePath = `${repository.path}/${CONFIG.FILE}`;
+        await PROCESSOR_TYPES[CONFIG.TYPE](fullFilePath);
         console.log(`Successfully executed processor ${CONFIG.TYPE}.`);
         await repository.push(`update ${CONFIG.TYPE}`);
         await repository.createPullRequest();
@@ -76,6 +86,4 @@ const main = async () => {
         console.error(`${CONFIG.TYPE} processor failed.`, err);
         process.exit(1);
     }
-};
-
-main();
+})();
