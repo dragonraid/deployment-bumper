@@ -1,7 +1,5 @@
 const { Helmfile } = require('./helmfile');
 
-jest.mock('axios');
-
 describe('Helmfile can', () => {
     test('construct global arguments', () => {
         const globalArgsInput = {
