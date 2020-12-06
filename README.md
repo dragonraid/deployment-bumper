@@ -92,7 +92,7 @@ Under the hood this type runs [helmfile deps](https://github.com/roboll/helmfile
 #### Example
 
 ```yaml
-name: update ubuntu base image
+name: update helmfile lock
 
 on:
   schedule:
@@ -102,7 +102,7 @@ jobs:
   update:
     runs-on: ubuntu-20.04
     steps:
-      - name: update ubuntu AMI
+      - name: update helmfile.lock
         uses: dragonraid/deployment-bumper
         env:
           TYPE: helmfile
