@@ -1,7 +1,8 @@
 name: 'Deployment Bumper'
 description: 'Update deployment related stuff'
 runs:
-  using: 'node12'
+  using: 'docker'
+  image: 'Dockerfile'
 branding:
   icon: 'edit'
   color: blue
