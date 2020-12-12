@@ -13,4 +13,4 @@ RUN npm install \
     && mv /tmp/helmfile_linux_amd64 /usr/local/bin/helmfile \
     && chmod +x /usr/local/bin/helmfile
 
-ENTRYPOINT [ "node" "src/index.js" ]
+ENTRYPOINT [ "node", "src/index.js" ]
