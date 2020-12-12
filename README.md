@@ -7,10 +7,6 @@ It does so by reading specified file in your repository updating respective
 dependency/version and opening pull request with this update to against default branch.
 See _Types_ section to see, what can this action update.
 
-> NOTE: This action is not using standard github action execution with `uses` keyword, because that
-> would require to check in node_modules. Instead, it clones this action and then runs npm install
-> and npm start
-
 ## Inputs
 
 Environment variables are used for inputs instead of actual github action inputs,
@@ -55,7 +51,7 @@ By default this type returns latest image based on your inputs:
 | INSTANCE_TYPE |         Virtualization details, varies based on cloud |    `hvm-ssd` |       no |
 | RELEASE       |            release (do not supply if you want latest) |   `20200924` |       no |
 
-## Example
+#### Example
 
 ```yaml
 name: update ubuntu base image
@@ -68,17 +64,11 @@ jobs:
   update:
     runs-on: ubuntu-20.04
     steps:
-      - name: checkout dragonraid/deployment-bumper
-        uses: actions/checkout@v2
-        with:
-          repository: dragonraid/deployment-bumper
-          ref: refs/heads/main
-          path: ./.github/actions/deployment-bumper
-      - name: run deployment-bumper
-        working-directory: ./.github/actions/deployment-bumper
+      - name: update ubuntu AMI
+        uses: dragonraid/deployment-bumper
         env:
           TYPE: ubuntu
-          FILE: packer.json
+          FILE: ami.json
           REPOSITORY: dragonraid/test
           USERNAME: ${{ secrets.username }}
           PASSWORD: ${{ secrets.password }}
@@ -88,7 +78,36 @@ jobs:
           VERSION: '20.04'
           ARCHITECTURE: amd64
           INSTANCE_TYPE: hvm-ssd
-        run: |
-          npm install --only=prod
-          npm start
+```
+
+### Helmfile lock
+
+With this type you can update [helmfile](https://github.com/roboll/helmfile) lock files.
+Under the hood this type runs [helmfile deps](https://github.com/roboll/helmfile#deps) command.
+
+| Input       |                             Description | Example | Required |
+| :---------- | --------------------------------------: | ------: | -------: |
+| ENVIRONMENT | helmfile global options `--environment` | `myEnv` |       no |
+
+#### Example
+
+```yaml
+name: update helmfile lock
+
+on:
+  schedule:
+    - cron:  '0 0 1 * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: update helmfile.lock
+        uses: dragonraid/deployment-bumper
+        env:
+          TYPE: helmfile
+          FILE: helmfile.yaml
+          USERNAME: ${{ secrets.username }}
+          PASSWORD: ${{ secrets.password }}
+          ENVIRONMENT: staging
 ```

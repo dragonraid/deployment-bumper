@@ -14,14 +14,14 @@ class Repository {
      * @param {string} username         - github username
      * @param {string} password         - github personal access token
      * @param {string} path             - where to clone repository
-     * @param {string} branchNamePrefix - branch name prefix
+     * @param {string} branchName       - branch name prefix
      * @param {string} pathPrefix       - local repository path prefix
      */
     constructor({
         repository,
+        username,
         password,
         path,
-        username,
         branchName,
         pathPrefix = '/tmp/',
     }) {

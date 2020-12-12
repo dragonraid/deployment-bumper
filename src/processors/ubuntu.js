@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { File } = require('./file');
 
 const UBUNTU_IMAGE_FINDER_URL = 'https://cloud-images.ubuntu.com/locator/releasesTable?_=1598175887311';
 const FIELD_MAPPINGS = {
@@ -16,40 +17,28 @@ const LINK_REGEX = /(.*\")(.*)(\">)(.*)(<.*)/;
 /**
  * Linux ubuntu handler
  */
-class Ubuntu {
+class Ubuntu extends File {
     /**
      * Represents ubuntu image
-     * @param {string} criteria     - object with filter properties
-     *           example: {
-     *               cloud: 'Amazon AWS',
-     *               zone: 'us-east-1',
-     *               name: 'bionic',
-     *               version: '18.04',
-     *               architecture: 'amd64',
-     *               instanceType: 'hvm-ssd',
-     *               release: '20201204'
-     *           }
+     * @param {object} criteria - object with filter properties. For example:
+     *                              {
+     *                                  cloud: 'Amazon AWS',
+     *                                  zone: 'us-east-1',
+     *                                  name: 'bionic',
+     *                                  version: '18.04',
+     *                                  architecture: 'amd64',
+     *                                  instanceType: 'hvm-ssd',
+     *                                  release: '20201204'
+     *                              }
+     * @param {string} filePath - path to file
+     * @param {array} keys      - string keys to be replaced
      */
-    constructor(criteria) {
+    constructor(criteria, filePath, keys) {
+        super(filePath);
         this.criteria = criteria;
+        this.keys = keys;
         this.allImages = null;
         this.processedImages = null;
-    }
-
-    /**
-     * Gets latest image.
-     */
-    get latest() {
-        if (!this.processedImages) {
-            // Workaround since you cannot have async getter
-            return (async () => {
-                await this.run();
-            })().then(() => {
-                return this._constructImageProperties(this.processedImages[0]);
-            });
-        } else {
-            return this.processedImages[0];
-        }
     }
 
     /**
@@ -78,6 +67,7 @@ class Ubuntu {
             );
         });
 
+        images = images.map(this._constructImageProperties);
         this.processedImages = images.sort(
             (a, b) => (
                 // eslint-disable-next-line max-len
@@ -105,11 +95,19 @@ class Ubuntu {
     }
 
     /**
-     * Runs ubuntu image retrieval
+     * Runs, initializes and edits file
      */
     async run() {
         await this.getImages();
         this.filterImages();
+        const latest = this.processedImages[0];
+        const keyValuePairs = {};
+        this.keys.forEach((key) => {
+            keyValuePairs[key] = latest.id;
+        });
+        const data = await this.read();
+        const editedData = this.edit(data, keyValuePairs);
+        await this.write(editedData);
     }
 }
 

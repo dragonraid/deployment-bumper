@@ -24,50 +24,26 @@ const FILE_TYPE_PROCESSORS = {
  */
 class File {
     /**
-     * @param {string} file          - file to be edited
-     * @param {object} keyValuePairs - key-value pairs to be edited
+     * @param {string} filePath - file to be edited
      */
-    constructor({
-        filePath,
-        keyValuePairs,
-    }) {
+    constructor(filePath) {
         this.filePath = null;
-        this.keyValuePairs = null;
         this.type = null;
-        this.init(filePath, keyValuePairs);
+        this.init(filePath);
     }
 
     /**
      * Initiates properties by parsing descriptor
      * @param {string} filePath      - file to be edited
-     * @param {object} keyValuePairs - key-value pairs to be edited
      */
-    init(filePath, keyValuePairs) {
+    init(filePath) {
+        if (!filePath) {
+            throw new Error('filePath cannot be empty!');
+        }
         const fileSplit = filePath.split('.');
         const fileType = fileSplit[fileSplit.length - 1];
         this.filePath = filePath;
         this.type = FILE_TYPES[fileType.toLocaleLowerCase()];
-
-        if (typeof keyValuePairs !== 'object') {
-            throw new Error(
-                `"keyValuePairs" must be an object. Got ${keyValuePairs}`,
-            );
-        }
-        // TODO: add validation for key value
-        this.keyValuePairs = keyValuePairs;
-    }
-
-
-    /**
-     * Run main logic
-     * @param {string} value - value of specified key will be changed
-     * TODO: implement multiple values for multiple keys
-     */
-    async run() {
-        const data = await this.read();
-        const editedData = this.edit(data);
-        await this.write(editedData);
-        // if changed write, else do nothing
     }
 
     /**
@@ -90,11 +66,12 @@ class File {
 
     /**
      * Edit file data and return edited data
-     * @param {object} data - parsed file data
+     * @param {object} data          - parsed file data
+     * @param {object} keyValuePairs - key-values pair that edits data
      * @return {object}
      */
-    edit(data) {
-        for (const [key, value] of Object.entries(this.keyValuePairs)) {
+    edit(data, keyValuePairs) {
+        for (const [key, value] of Object.entries(keyValuePairs)) {
             _.set(data, key, value);
         }
         return data;
