@@ -107,5 +107,7 @@ jobs:
         env:
           TYPE: helmfile
           FILE: helmfile.yaml
+          USERNAME: ${{ secrets.username }}
+          PASSWORD: ${{ secrets.password }}
           ENVIRONMENT: staging
 ```
