@@ -11,6 +11,7 @@ COPY . .
 
 RUN npm install \
     && mv /tmp/helmfile_linux_amd64 /usr/local/bin/helmfile \
-    && chmod +x /usr/local/bin/helmfile
+    && chmod +x /usr/local/bin/helmfile \
+    && curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 ENTRYPOINT [ "node", "/app/src/index.js" ]
