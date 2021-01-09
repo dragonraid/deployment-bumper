@@ -20,14 +20,15 @@ env:
   inputKey3: inputValue3
 ```
 
-| Input      |                               Description |                        Example | Required |
-| :--------- | ----------------------------------------: | -----------------------------: | -------: |
-| TYPE       |                            processor type |                       `ubuntu` |      yes |
-| FILE       | path to file to be updated (JSON or YAML) |              `deploy/ami.json` |      yes |
-| KEY        |                 key in file to be updated |          `builders.source_ami` |      yes |
-| REPOSITORY |                                repository | `dragonraid/deployment-bumper` |      yes |
-| USERNAME   |                           github username |                   `dragonraid` |      yes |
-| PASSWORD   |  password or github personal access token |                         `xxxx` |      yes |
+| Input          |                                 Description |                        Example | Required |
+| :------------- | ------------------------------------------: | -----------------------------: | -------: |
+| TYPE           |                              processor type |                       `ubuntu` |      yes |
+| FILE           |   path to file to be updated (JSON or YAML) |              `deploy/ami.json` |      yes |
+| KEY            |                   key in file to be updated |          `builders.source_ami` |      yes |
+| REPOSITORY     |                                  repository | `dragonraid/deployment-bumper` |      yes |
+| USERNAME       |                             github username |                   `dragonraid` |      yes |
+| PASSWORD       |    password or github personal access token |                         `xxxx` |      yes |
+| PRE_RUN_SCRIPT | shell script to execute before running type |                  `./prerun.sh` |       no |
 
 ## Types
 
@@ -81,6 +82,8 @@ jobs:
 ```
 
 ### Helmfile lock
+
+**TYPE: `helmfile`**
 
 With this type you can update [helmfile](https://github.com/roboll/helmfile) lock files.
 Under the hood this type runs [helmfile deps](https://github.com/roboll/helmfile#deps) command.
