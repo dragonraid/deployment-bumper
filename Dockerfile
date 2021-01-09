@@ -14,7 +14,7 @@ ADD https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/hel
 
 COPY . .
 
-RUN npm install \
+RUN npm install --only=prod \
     && mv /tmp/helmfile_linux_amd64 /usr/local/bin/helmfile \
     && chmod +x /usr/local/bin/helmfile \
     && curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash \
@@ -26,6 +26,6 @@ RUN npm install \
 RUN mkdir -p ${HELM_PLUGIN_PATH} \
     && helm plugin install https://github.com/zendesk/helm-secrets \
     # copy must be executed as last command in order to copy all plugins it ${HELM_PLUGIN_PATH}
-    && cp -r /root/.cache/helm/plugins/* /opt/helm/plugins/
+    && cp -r /root/.cache/helm/plugins/* ${HELM_PLUGIN_PATH}
 
 ENTRYPOINT [ "node", "/app/src/index.js" ]

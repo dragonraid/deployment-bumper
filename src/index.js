@@ -1,5 +1,12 @@
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const fs = require('fs').promises;
+
 const { Repository } = require('./github');
 const handlers = require('./handlers');
+
+const DEFAULT_SHELL = '/bin/bash';
+const PRE_RUN_SCRIPT_PERMISSIONS = 0o744;
 
 /**
  * Raw configuration.
@@ -12,13 +19,16 @@ const RAW_CONFIG = {
     REPOSITORY: process.env.REPOSITORY || process.env.GITHUB_REPOSITORY,
     USERNAME: process.env.USERNAME || null,
     PASSWORD: process.env.PASSWORD || null,
+    PRE_RUN_SCRIPT: process.env.PRE_RUN_SCRIPT || null,
 };
 
 const CONFIG = {};
 
+// TODO: might be prudent to put helper functions from here to i.e. utils.js
+
 /**
  * This function processes RAW_CONFIG object. Reasoning is that environment
- * variables, that populates th Config can only contain string, but sometimes
+ * variables, that populates this Config can only contain string, but sometimes
  * we need other types. It also checks, if RAW_CONFIG object contains all
  * necessary properties and those properties are valid.
  */
@@ -34,6 +44,21 @@ const processConfig = () => {
         }
         CONFIG[key] = value;
     }
+};
+
+/**
+ * Execute custom shell script before calling processor
+ * @param {string} script - path to script
+ */
+const preRunScript = async (script) => {
+    console.log(`changing permissions of ${script} to 744`);
+    fs.chmod(script, PRE_RUN_SCRIPT_PERMISSIONS);
+    console.log(`Executing ${script}`);
+    const { stdout, stderr } = await exec(
+        script,
+        { shell: DEFAULT_SHELL },
+    );
+    console.log(stdout, stderr);
 };
 
 /**
@@ -70,6 +95,15 @@ const PROCESSOR_TYPES = {
     } catch (err) {
         console.error('Config processor has failed!', err);
         process.exit(1);
+    }
+
+    if (CONFIG.PRE_RUN_SCRIPT) {
+        try {
+            await preRunScript(CONFIG.PRE_RUN_SCRIPT);
+        } catch (err) {
+            console.error(`Running ${CONFIG.PRE_RUN_SCRIPT} failed.`, err);
+            process.exit(1);
+        }
     }
 
     try {
