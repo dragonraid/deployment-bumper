@@ -11,6 +11,10 @@
     "test": "jest .",
     "lint": "eslint ."
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dragonraid/deployment-bumper.git"
+  },
   "author": {
     "name": "Lukas Novotny",
     "email": "lucass.novotny@gmail.com"
